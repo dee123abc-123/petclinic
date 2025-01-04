@@ -79,14 +79,11 @@ pipeline {
                 }
         }
     }
-    }
     
-
-    post {
-        always {
-            echo 'Cleaning up...'
-            // Any cleanup steps, like stopping the app or cleaning up the environment
-            sh 'pkill -f "mvn spring-boot:run" || true' // Ensure the app is stopped
+        stage('Cleaning') {
+            steps {
+                script {
+                    pipeline.stop_application()
+                }
         }
     }
-}
