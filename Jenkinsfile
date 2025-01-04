@@ -1,3 +1,4 @@
+Library('my-shared-library@main') 
 pipeline {
     agent any
 
@@ -83,7 +84,7 @@ pipeline {
         stage('Cleaning') {
             steps {
                 script {
-                    pipeline.stop_application()
+                    pipeline.clean_up()
                 }
         }
     }
