@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'slave' }
+    agent { label 'slave-95' }
 
     environment {
         JAVA_HOME = '/usr/lib/jvm/java-17-openjdk-amd64'
@@ -10,50 +10,48 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                echo 'Checking out code...'
-                checkout scm
+                script {
+                    pipeline.check_out()
+                }
             }
         }
 
         stage('Set up Java 17') {
             steps {
-                echo 'Setting up Java 17...'
-                sh 'sudo apt update'
-                sh 'sudo apt install -y openjdk-17-jdk'
+                script {
+                    pipeline.setup_java()
+                }
             }
         }
 
         stage('Set up Maven') {
             steps {
-                echo 'Setting up Maven...'
-                sh 'sudo apt install -y maven'
+                script {
+                    pipeline.setup_maven()
+                }
             }
         }
 
         stage('Build with Maven') {
             steps {
-                echo 'Building project with Maven...'
-                sh 'mvn clean package'
+                script {
+                    pipeline.build_project()
+                }
             }
         }
 
         stage('Upload Artifact') {
             steps {
-                echo 'Uploading artifact...'
-                archiveArtifacts artifacts: 'target/simple-parcel-service-app-1.0-SNAPSHOT.jar', allowEmptyArchive: true
+                script {
+                    pipeline.upload_artifact(String artifactPath)
+                }
             }
         }
 
         stage('Run Application') {
             steps {
-                echo 'Running Spring Boot application...'
-                sh 'nohup mvn spring-boot:run &'
-                sleep(time: 15, unit: 'SECONDS') // Wait for the application to fully start
-
-                // Fetch the public IP and display the access URL
                 script {
-                    def publicIp = sh(script: "curl -s https://checkip.amazonaws.com", returnStdout: true).trim()
-                    echo "The application is running and accessible at: http://${publicIp}:8080"
+                    pipeline.run_application()
                 }
             }
         }
@@ -62,14 +60,7 @@ pipeline {
             steps {
                 echo 'Validating that the app is running...'
                 script {
-                    def response = sh(script: 'curl --write-out "%{http_code}" --silent --output /dev/null http://localhost:8080', returnStdout: true).trim()
-                    if (response == "200") {
-                        echo 'The app is running successfully!'
-                    } else {
-                        echo "The app failed to start. HTTP response code: ${response}"
-                        currentBuild.result = 'FAILURE'
-                        error("The app did not start correctly!")
-                    }
+                    pipeline.validate_app()
                 }
             }
         }
@@ -83,9 +74,9 @@ pipeline {
 
         stage('Gracefully Stop Spring Boot App') {
             steps {
-                echo 'Gracefully stopping the Spring Boot application...'
-                sh 'mvn spring-boot:stop'
-            }
+                script {
+                    pipeline.stop_application()
+                }
         }
     }
 
