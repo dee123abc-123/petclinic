@@ -1,7 +1,7 @@
 @Library('my-shared-library@main') _
 
 pipeline {
-    agent { label 'slave_95' }
+    agent any
 
     environment {
         JAVA_HOME = '/usr/lib/jvm/java-17-openjdk-amd64'
