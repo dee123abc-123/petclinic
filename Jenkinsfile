@@ -1,6 +1,7 @@
-Library('my-shared-library@main') 
+@Library('my-shared-library@main') _
+
 pipeline {
-    agent any
+    agent { label 'slave-1' }
 
     environment {
         JAVA_HOME = '/usr/lib/jvm/java-17-openjdk-amd64'
@@ -8,84 +9,79 @@ pipeline {
         PATH = "${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${env.PATH}"
     }
 
-    stages {
+   stages {
         stage('Checkout Code') {
             steps {
-                script {
-                    pipeline.check_out()
-                }
-            }
-        }
-
+		script {
+			pipeline1.checkscm()
+		}		
+       	}
+     }
         stage('Set up Java 17') {
             steps {
                 script {
-                    pipeline.setup_java()
+                	pipeline1.setupjava()
                 }
             }
-        }
+	}
 
         stage('Set up Maven') {
             steps {
                 script {
-                    pipeline.setup_maven()
-                }
+                	pipeline1.mavensetup()
+		}
             }
         }
 
         stage('Build with Maven') {
             steps {
                 script {
-                    pipeline.build_project()
-                }
+			pipeline1.build()
+		}
             }
         }
 
         stage('Upload Artifact') {
             steps {
-                script {
-                    pipeline.upload_artifact(String artifactPath)
-                }
+                uploadArtifact('target/bus-booking-app-1.0-SNAPSHOT.jar')
             }
         }
 
         stage('Run Application') {
             steps {
                 script {
-                    pipeline.run_application()
-                }
+				pipeline1.runApp()
+				}
             }
         }
 
         stage('Validate App is Running') {
-            steps {
-                echo 'Validating that the app is running...'
-                script {
-                    pipeline.validate_app()
-                }
-            }
+          	steps {
+               	script {
+					pipeline1.validateApp()
+				}
+			}
         }
-
-        stage('Wait for 2 minutes') {
-            steps {
-                echo 'Waiting for 2 minutes...'
-                sleep(time: 2, unit: 'MINUTES')  // Wait for 2 minutes
-            }
+        stage('wait') {
+			steps {
+				script {
+					pipeline1.waiting()
+				}
+			}
         }
-
-        stage('Gracefully Stop Spring Boot App') {
-            steps {
-                script {
-                    pipeline.stop_application()
-                }
+        stage('stoping') {
+			steps {
+				script {
+					pipeline1.stop()
+				}
+			}
         }
-    }
-    
-        stage('Cleaning') {
-            steps {
-                script {
-                    pipeline.clean_up()
-                }
-        }
+         stage('cleaning') {
+			steps {
+				script {
+					pipeline1.clean()
+				}
+			}
+        }        
     }
 }
