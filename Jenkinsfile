@@ -79,6 +79,8 @@ pipeline {
                 }
         }
     }
+    }
+    
 
     post {
         always {
@@ -87,5 +89,4 @@ pipeline {
             sh 'pkill -f "mvn spring-boot:run" || true' // Ensure the app is stopped
         }
     }
-}
 }
